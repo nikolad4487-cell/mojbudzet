@@ -30,5 +30,19 @@ do $$ declare t text;n integer; begin
  begin perform public.pay_obligation('cccccccc-cccc-4ccc-8ccc-cccccccccccc','2026-11',gen_random_uuid()); raise exception 'Foreign RPC permitted'; exception when raise_exception then if sqlerrm='Foreign RPC permitted' then raise; end if; end;
  insert into public.accounts(user_id,name,type) values(auth.uid(),'Allowed','Gotovina');
 end $$;
+-- Own obligation payment is atomic and idempotent, then becomes unpaid after deletion.
+insert into public.obligations(id,user_id,title,amount_cents,due_day,starts_on,account_id) values('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',auth.uid(),'Own rent',30000,1,'2020-01-01','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+do $$ declare first_id uuid; second_id uuid; n integer; begin
+ first_id:=public.pay_obligation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',to_char(current_date,'YYYY-MM'),gen_random_uuid());
+ second_id:=public.pay_obligation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',to_char(current_date,'YYYY-MM'),gen_random_uuid());
+ if first_id<>second_id then raise exception 'Payment retry created a duplicate'; end if;
+ select count(*) into n from public.transactions where obligation_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+ if n<>1 then raise exception 'Payment count must be one'; end if;
+ update public.transactions set note='Edited' where id=first_id;
+ delete from public.transactions where id=first_id;
+ select count(*) into n from public.transactions where obligation_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+ if n<>0 then raise exception 'Own DELETE failed'; end if;
+ perform public.pay_obligation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',to_char(current_date,'YYYY-MM'),gen_random_uuid());
+end $$;
 reset role;
 rollback;
