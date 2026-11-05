@@ -1,0 +1,12 @@
+export type Row={id:string;user_id:string}
+export type Account=Row&{name:string;opening_cents:number;type:string}
+export type Transaction=Row&{title:string;amount_cents:number;date:string;kind:'income'|'expense'|'transfer';status:'expected'|'received';account_id:string;to_account_id:string|null;category_id:string|null;note:string;obligation_id:string|null;obligation_month:string|null}
+export type Category=Row&{name:string}
+export type Obligation=Row&{title:string;amount_cents:number;due_day:number;starts_on:string;ends_on:string|null;account_id:string}
+export type Goal=Row&{title:string;target_cents:number;saved_cents:number;reserved_cents:number}
+export type Plan=Row&{month:string;income_cents:number;expense_cents:number;saving_cents:number}
+export type Settings=Row&{manual_limit_cents:number|null;theme:string}
+export type Profile=Row&{first_name:string;last_name:string}
+export type Data={accounts:Account[];transactions:Transaction[];categories:Category[];obligations:Obligation[];goals:Goal[];plans:Plan[];settings:Settings[];profiles:Profile[]}
+export const tables=['accounts','transactions','categories','obligations','goals','plans','settings','profiles'] as const
+export const empty:Data={accounts:[],transactions:[],categories:[],obligations:[],goals:[],plans:[],settings:[],profiles:[]}
