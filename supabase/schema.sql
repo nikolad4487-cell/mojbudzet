@@ -44,7 +44,10 @@ declare r public.obligations; result uuid; m date; begin
  if not found then raise exception 'Obveza nije dostupna'; end if;
  if m>date_trunc('month',current_date)::date or m<date_trunc('month',r.starts_on)::date or (r.ends_on is not null and m>date_trunc('month',r.ends_on)::date) then raise exception 'Obveza ne vrijedi za odabrani mjesec'; end if;
  select id into result from public.transactions where user_id=auth.uid() and obligation_id=p_id and obligation_month=p_month;
- if found then return result; end if;
+ if found then
+ update public.transactions set status='received',amount_cents=r.amount_cents,account_id=r.account_id,date=least(current_date,(m+interval '1 month - 1 day')::date) where id=result and status='expected';
+ return result;
+ end if;
  insert into public.transactions(id,user_id,title,amount_cents,date,kind,status,account_id,obligation_id,obligation_month)
  values(p_request_id,auth.uid(),r.title,r.amount_cents,least(current_date,(m+interval '1 month - 1 day')::date),'expense','received',r.account_id,p_id,p_month) returning id into result;
  return result;

@@ -38,7 +38,10 @@ do $$ declare first_id uuid; second_id uuid; n integer; begin
  if first_id<>second_id then raise exception 'Payment retry created a duplicate'; end if;
  select count(*) into n from public.transactions where obligation_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
  if n<>1 then raise exception 'Payment count must be one'; end if;
- update public.transactions set note='Edited' where id=first_id;
+ update public.transactions set note='Edited',status='expected' where id=first_id;
+ perform public.pay_obligation('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',to_char(current_date,'YYYY-MM'),gen_random_uuid());
+ select count(*) into n from public.transactions where id=first_id and status='received';
+ if n<>1 then raise exception 'Expected payment must become received'; end if;
  delete from public.transactions where id=first_id;
  select count(*) into n from public.transactions where obligation_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
  if n<>0 then raise exception 'Own DELETE failed'; end if;

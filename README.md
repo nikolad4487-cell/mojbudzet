@@ -9,7 +9,7 @@ React, TypeScript, Vite, Tailwind CSS, shadcn-style Button (Radix Slot / CVA), L
 Node 22.12+ ili 24, npm:
 
 ```sh
-npm install
+npm ci
 cp .env.example .env.local
 # Upišite URL i publishable key svog Supabase projekta.
 npm run dev
@@ -17,20 +17,22 @@ npm test
 npm run build
 ```
 
-Instalacija u izvornom cloud okruženju blokirana je mrežnim proxyjem. Stoga lockfile i produkcijska izgradnja nisu lokalno potvrđeni. GitHub Actions instalira pakete, provjerava testove i build te objavljuje artefakt s lockfileom i distom; prije produkcije preuzmite i commitajte lockfile te zamijenite `npm install` s `npm ci` u CI-ju. Nemojte smatrati prolazak financijskih unit testova dokazom da Auth, RLS ili cijela aplikacija rade.
+Lokalno cloud okruženje blokira mrežne veze. Instalacija i provjere zato su provedene kroz GitHub Actions: `npm ci`, 8 financijskih testova, TypeScript, Vite produkcijska izgradnja, Chromium smoke testovi na 360/768/1440 px i SQL/RLS testovi na izoliranom PostgreSQL-u prolaze. Lockfile iz uspješne izgradnje spremljen je u repozitorij. To ne zamjenjuje provjeru stvarnog Supabase Autha, e-mail dostave i sinkronizacije uređaja.
+
+Audit nakon ažuriranja React Routera i Vitea: 0 high / 0 critical, 2 low / 3 moderate. Preostali nalazi su tranzitivni build alati (`workbox-build`, `glob`, `minimatch`, `deepmerge`, `@rollup/plugin-node-resolve`); izvještaj se sprema kao CI artefakt. Potrebno ih je riješiti prije produkcije kompatibilnim izdanjima i provjeriti ponovnu izgradnju.
 
 ## Supabase: novi zasebni projekt
 
 Povezani projekti `e-dnevnikskolehrme` i `StudyWorks` nisu mijenjani. Koristite novi ili izričito namijenjeni projekt. Ne upotrebljavajte postojeću bazu s istoimenim tablicama.
 
-1. U SQL Editoru jednom izvršite `supabase/schema.sql`. Skripta je transakcijska početna shema; nije idempotentna.
+1. U SQL Editoru jednom izvršite početnu datoteku u `supabase/migrations/*_initial_budget.sql` (isti sadržaj kao `supabase/schema.sql`). Skripta je transakcijska početna shema; nije idempotentna.
 2. Uključite Email provider i **Confirm email**. Postavite produkcijski SMTP; razvojni SMTP ima ograničenja slanja.
 3. Auth → URL Configuration: Site URL `https://VAS-PROJEKT.vercel.app`. Dodajte dopuštene redirectove `http://localhost:5173/auth/callback`, `http://localhost:5173/auth/reset`, `https://VAS-PROJEKT.vercel.app/auth/callback`, `https://VAS-PROJEKT.vercel.app/auth/reset`. Dodajte konkretne preview adrese ako testirate preview. Zadržite Supabase predložak s `{{ .ConfirmationURL }}`.
 4. API URL i **publishable** ključ upišite u `.env.local` i Vercel. Service-role / secret ključ nikad ne ide u VITE varijable.
 5. Na odvojenoj testnoj bazi kao postgres pokrenite `psql "$TEST_DATABASE_URL" -f supabase/tests/security.sql`. Skripta koristi transakciju i rollback.
 6. Pokrenite Supabase security/performance advisors u Dashboardu i riješite nalaze prije puštanja korisnicima.
 
-CLI nije dostupan u početnom okruženju. Kada postane dostupan, provjerite `supabase --help`, inicijalizirajte lokalni projekt, generirajte početnu migraciju naredbom `supabase migration new initial_budget` i kopirajte `schema.sql` u generiranu datoteku. Provjerite migraciju na praznoj lokalnoj bazi prije povezivanja s produkcijom. Namjerno nije izmišljen naziv CLI migracije niti primijenjena shema na nepovezani projekt.
+Početni naziv migracije generiran je Supabase CLI-jem 2.81.3 preko `supabase migration new initial_budget` u CI-ju. CI provjerava da shema i migracija imaju jednak sadržaj i primjenjuje migraciju na prazni PostgreSQL. Za povezani Supabase CLI projekt koristite `supabase db push` nakon pregleda `supabase db push --help`; ako ste SQL već ručno primijenili, prvo uskladite migration history prema CLI dokumentaciji. Nemojte istu početnu shemu primijeniti dvaput.
 
 ## Vercel
 
@@ -49,7 +51,7 @@ Importirajte postojeći GitHub repozitorij, framework **Vite**, build `npm run b
 
 ## Ograničenja i preostali razvoj
 
-Ovo je početna implementacija, **nije potvrđena produkcijski spremna aplikacija**. Nisu izvršeni browser/E2E testovi, SQL/RLS testovi ni produkcijska izgradnja zbog nedostupnih paketa i neodabranog Supabase projekta.
+Ovo je početna implementacija, **nije potvrđena produkcijski spremna aplikacija**. Produkcijska izgradnja, Chromium smoke testovi i SQL/RLS testovi prolaze u CI-ju. Stvarni Supabase Auth/e-mail, Realtime između dvaju uređaja i produkcijska Vercel objava još nisu potvrđeni jer projekt nije odabran/povezan.
 
 - Povijesni saldo i transakcije su trajni; povijesni dnevni limit u kalendaru ponovno se računa prema današnjim pravilima štednje/limita. Za nepromjenjive povijesne limite treba dodati dnevne snapshotove i verzioniranje pravila.
 - Štednja ima trenutačni ostvareni/rezervirani iznos, ali nema knjigu pojedinačnih uplata i mjesečnih snapshotova. Početna stanja računa vrijede od početka knjige; za račune otvorene kasnije treba dodati datum početnog stanja.

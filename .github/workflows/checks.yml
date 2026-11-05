@@ -14,9 +14,6 @@ jobs:
           node-version: 22
       - run: npm ci --ignore-scripts
       - run: npm audit --json > npm-audit.json || true
-      - run: npx --yes supabase@2.81.3 --help
-      - run: npx --yes supabase@2.81.3 migration new initial_budget
-      - run: cp supabase/schema.sql supabase/migrations/*_initial_budget.sql
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium
@@ -55,5 +52,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/bootstrap.sql
-      - run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - run: diff supabase/schema.sql supabase/migrations/*_initial_budget.sql
+      - run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/*_initial_budget.sql
       - run: psql -v ON_ERROR_STOP=1 -f supabase/tests/security.sql
