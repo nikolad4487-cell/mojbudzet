@@ -16,6 +16,8 @@ jobs:
       - run: npm audit --json > npm-audit.json || true
       - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -24,6 +26,7 @@ jobs:
             dist
             package-lock.json
             npm-audit.json
+            test-results
   database-security:
     runs-on: ubuntu-latest
     services:
