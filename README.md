@@ -21,7 +21,17 @@ Lokalno cloud okruženje blokira mrežne veze. Instalacija i provjere zato su pr
 
 Audit nakon ažuriranja React Routera i Vitea: 0 high / 0 critical, 2 low / 3 moderate. Preostali nalazi su tranzitivni build alati (`workbox-build`, `glob`, `minimatch`, `deepmerge`, `@rollup/plugin-node-resolve`); izvještaj se sprema kao CI artefakt. Potrebno ih je riješiti prije produkcije kompatibilnim izdanjima i provjeriti ponovnu izgradnju.
 
-## Supabase: novi zasebni projekt
+## Povezani Supabase projekt
+
+Projekt **MojBudzet**, ref `knxhadgheqybthdfjqrq`, povezan je 6. studenoga 2026. Početna migracija primijenjena je na prethodno praznu shemu `public`. Ime datoteke migracije usklađeno je sa stvarno zabilježenom verzijom `20261106152035` iz Supabase migration historyja. Na ovom projektu nemojte ponovo ručno primijeniti početnu shemu.
+
+Provjera konfiguracije potvrđuje svih osam tablica s uključenim RLS-om, po četiri CRUD pravila i uključivanje u publikaciju `supabase_realtime`. Security advisor nema nalaza. Performance advisor navodi informativne još nekorištene indekse u novoj bazi; nisu uklanjani.
+
+Testna skripta koja privremeno stvara korisnike i izvršava rollback nije izvršena na povezanom projektu: alat je odbio zahtjev za izvršavanje SQL-a, bez dodatnog razloga. Prethodne CI provjere na izoliranom PostgreSQL-u ostaju valjane, ali nisu potvrda stvarne Supabase Auth prijave, e-mail dostave ili sinkronizacije uređaja.
+
+Lokalni `.env.local` postavljen je pomoću URL-a projekta i aktivnog publishable ključa; datoteka je ignorirana u Gitu. Ključ nije spremljen u repozitorij. Za Vercel i druge lokalne kopije postavite obje varijable kroz njihovu konfiguraciju. SMTP, Auth redirectovi i Vercel integracija još nisu konfigurirani kroz ovaj rad.
+
+## Supabase: postavljanje druge prazne baze
 
 Povezani projekti `e-dnevnikskolehrme` i `StudyWorks` nisu mijenjani. Koristite novi ili izričito namijenjeni projekt. Ne upotrebljavajte postojeću bazu s istoimenim tablicama.
 
@@ -51,7 +61,7 @@ Importirajte postojeći GitHub repozitorij, framework **Vite**, build `npm run b
 
 ## Ograničenja i preostali razvoj
 
-Ovo je početna implementacija, **nije potvrđena produkcijski spremna aplikacija**. Produkcijska izgradnja, Chromium smoke testovi i SQL/RLS testovi prolaze u CI-ju. Stvarni Supabase Auth/e-mail, Realtime između dvaju uređaja i produkcijska Vercel objava još nisu potvrđeni jer projekt nije odabran/povezan.
+Ovo je početna implementacija, **nije potvrđena produkcijski spremna aplikacija**. Produkcijska izgradnja, Chromium smoke testovi i SQL/RLS testovi prolaze u CI-ju. Stvarni Supabase Auth/e-mail, Realtime između dvaju uređaja i produkcijska Vercel objava još nisu potvrđeni ; projekt je sada povezan, ali preostale integracijske provjere još nisu provedene.
 
 - Povijesni saldo i transakcije su trajni; povijesni dnevni limit u kalendaru ponovno se računa prema današnjim pravilima štednje/limita. Za nepromjenjive povijesne limite treba dodati dnevne snapshotove i verzioniranje pravila.
 - Štednja ima trenutačni ostvareni/rezervirani iznos, ali nema knjigu pojedinačnih uplata i mjesečnih snapshotova. Početna stanja računa vrijede od početka knjige; za račune otvorene kasnije treba dodati datum početnog stanja.
