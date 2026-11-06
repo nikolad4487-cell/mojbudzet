@@ -74,3 +74,11 @@ Ovo je početna implementacija, **nije potvrđena produkcijski spremna aplikacij
 ## Obvezna provjera prije produkcije
 
 Pogledajte `TESTING.md`. Posebno provjerite izolaciju dvaju korisnika izravnim REST zahtjevima, linkove e-maila na drugom uređaju, dvije aktivne sesije, ponovljeno plaćanje obveze i brisanje računa. Nemojte objaviti aplikaciju dok CI build i sigurnosne provjere ne prođu.
+
+## Produkcijska objava na povezani Vercel
+
+Namjenski projekt: https://vercel.com/carnet-s-projects/mojbudzet, javna adresa: https://mojbudzet.vercel.app.
+
+U Vercel Settings → Environment Variables postavite `VITE_SUPABASE_URL=https://knxhadgheqybthdfjqrq.supabase.co` i aktivni publishable ključ tog projekta kao `VITE_SUPABASE_PUBLISHABLE_KEY` za Production. Nakon postavljanja varijabli potrebna je nova izgradnja; Vite ih ugrađuje pri izgradnji. Skripta `scripts/check-vercel-env.mjs` odbija Vercel izgradnju bez konfiguracije i odbija secret/service-role ključeve. Vrijednosti ključeva ne zapisuju se u log niti u repozitorij.
+
+U Supabase Auth URL Configuration postavite Site URL `https://mojbudzet.vercel.app` te dopuštene redirectove `https://mojbudzet.vercel.app/auth/callback` i `https://mojbudzet.vercel.app/auth/reset` uz lokalne adrese iz prethodnih uputa. Produkcijska grana Vercela treba biti `main`; merge odobrenog PR-a pokreće povezanu Git integraciju.

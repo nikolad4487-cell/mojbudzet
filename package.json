@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/check-vercel-env.mjs && tsc --noEmit && vite build",
     "test": "node --test src/finance.test.mjs",
     "preview": "vite preview",
     "test:browser": "node tests/browser.mjs"
